@@ -5,6 +5,8 @@ import os
 import torch
 import numpy as np
 import gym
+import sys
+sys.path.append("/home/lucia/Documents/Python-RVO2")
 from crowd_nav.utils.explorer import Explorer
 from crowd_nav.policy.policy_factory import policy_factory
 from crowd_sim.envs.utils.robot import Robot
@@ -104,6 +106,7 @@ def main():
             human_times = env.get_human_times()
             logging.info('Average time for humans to reach goal: %.2f', sum(human_times) / len(human_times))
     else:
+        print(env.case_size[args.phase])
         explorer.run_k_episodes(env.case_size[args.phase], args.phase, print_failure=True)
 
 

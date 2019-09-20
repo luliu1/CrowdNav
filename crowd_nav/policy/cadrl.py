@@ -169,7 +169,7 @@ class CADRL(Policy):
 
         if self.phase == 'train':
             self.last_state = self.transform(state)
-
+        #logging.info('v_action %f, rot_action, %f', max_action.vx, max_action.vy)
         return max_action
 
     def transform(self, state):

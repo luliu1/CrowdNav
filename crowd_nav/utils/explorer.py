@@ -114,15 +114,15 @@ class Explorer(object):
             value = torch.Tensor([value]).to(self.device)
 
             # # transform state of different human_num into fixed-size tensor
-            # if len(state.size()) == 1:
-            #     human_num = 1
-            #     feature_size = state.size()[0]
-            # else:
-            #     human_num, feature_size = state.size()
+            if len(state.size()) == 1:
+                 human_num = 1
+                 feature_size = state.size()[0]
+            else:
+                 human_num, feature_size = state.size()
             # if human_num != 5:
             #     padding = torch.zeros((5 - human_num, feature_size))
             #     state = torch.cat([state, padding])
-            self.memory.push((state, value))
+            self.memory[human_num - 1].push((state, value))
 
 
 def average(input_list):

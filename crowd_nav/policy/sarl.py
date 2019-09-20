@@ -4,6 +4,7 @@ from torch.nn.functional import softmax
 import logging
 from crowd_nav.policy.cadrl import mlp
 from crowd_nav.policy.multi_human_rl import MultiHumanRL
+import numpy as np
 
 
 class ValueNetwork(nn.Module):
@@ -77,6 +78,8 @@ class SARL(MultiHumanRL):
         mlp3_dims = [int(x) for x in config.get('sarl', 'mlp3_dims').split(', ')]
         attention_dims = [int(x) for x in config.get('sarl', 'attention_dims').split(', ')]
         self.with_om = config.getboolean('sarl', 'with_om')
+        self.FOV_min_angle = config.getfloat('map', 'angle_min') * np.pi % (2*np.pi)
+        self.FOV_max_angle = config.getfloat('map', 'angle_max') * np.pi % (2*np.pi)
         with_global_state = config.getboolean('sarl', 'with_global_state')
         self.model = ValueNetwork(self.input_dim(), self.self_state_dim, mlp1_dims, mlp2_dims, mlp3_dims,
                                   attention_dims, with_global_state, self.cell_size, self.cell_num)

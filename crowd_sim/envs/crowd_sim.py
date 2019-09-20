@@ -412,10 +412,15 @@ class CrowdSim(gym.Env):
             elif self.robot.sensor == 'RGB':
                 raise NotImplementedError
         else:
-            if self.robot.sensor == 'coordinates':
-                ob = [human.get_next_observable_state(action) for human, action in zip(self.humans, human_actions)]
-            elif self.robot.sensor == 'RGB':
-                raise NotImplementedError
+            if 'SARL' not in self.robot.policy.name:
+                print('ATTENTION, THIS SHOULD ONLY APPEAR IN SARL')
+            human_states_in_FOV = []
+            human_actions_in_FOV = []
+            for agent, action in zip(self.humans, human_actions):
+                if self.robot.policy.human_state_in_FOV(self.robot, agent):
+                    human_states_in_FOV.append(agent)
+                    human_actions_in_FOV.append(action)
+            ob = [agent.get_next_observable_state(action) for agent, action in zip(human_states_in_FOV, human_actions_in_FOV)]
 
         return ob, reward, done, info
 

@@ -1,4 +1,5 @@
 import sys
+sys.path.append("/home/lucia/Documents/Python-RVO2")
 import logging
 import argparse
 import configparser
@@ -58,7 +59,6 @@ def main():
     logging.info('Current git head hash code: %s'.format(repo.head.object.hexsha))
     device = torch.device("cuda:0" if torch.cuda.is_available() and args.gpu else "cpu")
     logging.info('Using device: %s', device)
-
     # configure policy
     policy = policy_factory[args.policy]()
     if not policy.trainable:
@@ -96,7 +96,12 @@ def main():
     checkpoint_interval = train_config.getint('train', 'checkpoint_interval')
 
     # configure trainer and explorer
-    memory = ReplayMemory(capacity)
+    human_num = env_config.getint('sim', 'human_num')
+    capacity = capacity//human_num
+    train_batches = train_batches//human_num
+    memory = []
+    for _ in range(human_num):
+        memory.append(ReplayMemory(capacity))
     model = policy.get_model()
     batch_size = train_config.getint('trainer', 'batch_size')
     trainer = Trainer(model, memory, device, batch_size)
@@ -130,7 +135,7 @@ def main():
         trainer.optimize_epoch(il_epochs)
         torch.save(model.state_dict(), il_weight_file)
         logging.info('Finish imitation learning. Weights saved.')
-        logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
+        #logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
     explorer.update_target_model(model)
 
     # reinforcement learning
@@ -142,7 +147,7 @@ def main():
     if args.resume:
         robot.policy.set_epsilon(epsilon_end)
         explorer.run_k_episodes(100, 'train', update_memory=True, episode=0)
-        logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
+        #logging.info('Experience set size: %d/%d', len(memory), memory.capacity)
     episode = 0
     while episode < train_episodes:
         if args.resume:
