@@ -42,12 +42,14 @@ class MultiHumanRL(CADRL):
                     next_human_states = [self.propagate(human_state, ActionXY(human_state.vx, human_state.vy))
                                        for human_state in state.human_states]
                     reward = self.compute_reward(next_self_state, next_human_states)
+                if len(next_human_states) == 0:
+                    next_human_states = [ObservableState(0, 0, 0, 0, 0)]
                 batch_next_states = torch.cat([torch.Tensor([next_self_state + next_human_state]).to(self.device)
                                               for next_human_state in next_human_states], dim=0)
                 rotated_batch_input = self.rotate(batch_next_states).unsqueeze(0)
                 if self.with_om:
                     if occupancy_maps is None:
-                        occupancy_maps = self.build_occupancy_maps(next_human_states).unsqueeze(0)
+                        occupancy_maps = self.build_occupancy_maps(next_human_states, state.self_state).unsqueeze(0)
                     rotated_batch_input = torch.cat([rotated_batch_input, occupancy_maps.to(self.device)], dim=2)
                 # VALUE UPDATE
                 next_state_value = self.model(rotated_batch_input).data.item()
